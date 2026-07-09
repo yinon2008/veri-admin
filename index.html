@@ -58,6 +58,10 @@
         <div><span class="muted">Signed in as</span> <span id="whoami" class="email"></span></div>
         <button class="ghost" id="logoutBtn">Sign out</button>
       </div>
+      <div class="row" style="margin-top:14px; align-items:flex-end;">
+        <div style="flex:1; min-width:180px;"><label>Set new password (for my account)</label><input id="newPw" type="password" autocomplete="new-password" /></div>
+        <button class="ghost" id="setPwBtn">Update password</button>
+      </div>
     </div>
 
     <div class="card">
@@ -167,6 +171,16 @@ $("loginBtn").onclick = async () => {
   } catch (e) { flash(e.message, "err"); }
 };
 $("logoutBtn").onclick = async () => { await sb.auth.signOut(); renderAuth(); };
+$("setPwBtn").onclick = async () => {
+  try {
+    const pw = $("newPw").value;
+    if (pw.length < 8) throw new Error("Password must be at least 8 characters");
+    const { error } = await sb.auth.updateUser({ password: pw });
+    if (error) throw error;
+    $("newPw").value = "";
+    flash("Password updated — use it for future sign-ins");
+  } catch (e) { flash(e.message, "err"); }
+};
 $("refreshBtn").onclick = refresh;
 $("createBtn").onclick = async () => {
   try {
