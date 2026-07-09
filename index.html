@@ -78,9 +78,11 @@
         <strong>Users &amp; access</strong>
         <button class="ghost" id="refreshBtn">Refresh</button>
       </div>
+      <input id="search" type="search" placeholder="Search by support code, name or email… (e.g. VERI-E3E7A31B)"
+             style="margin:6px 0 14px;" />
       <div style="overflow-x:auto;">
         <table>
-          <thead><tr><th>Email</th><th>Access</th><th>Grant tier</th><th></th></tr></thead>
+          <thead><tr><th>User</th><th>Access</th><th>Grant tier</th><th></th></tr></thead>
           <tbody id="users"></tbody>
         </table>
       </div>
@@ -120,14 +122,30 @@ async function api(action, body = {}) {
   return out;
 }
 
+// Same derivation as the iOS app's "Support Code" row in Profile.
+const supportCode = (id) => "VERI-" + id.replaceAll("-", "").slice(0, 8).toUpperCase();
+
+function applySearch() {
+  const q = $("search").value.trim().toLowerCase();
+  document.querySelectorAll("#users tr").forEach((tr) => {
+    tr.style.display = !q || tr.dataset.search.includes(q) ? "" : "none";
+  });
+}
+
 async function refresh() {
   try {
     const { users } = await api("list_users");
     $("users").innerHTML = users.map((u) => {
       const g = u.grant;
       const active = g && g.active && (!g.expires_at || new Date(g.expires_at) > new Date());
-      return `<tr>
-        <td class="email">${u.email ?? "—"}<div class="muted">${u.id.slice(0, 8)}…</div></td>
+      const code = supportCode(u.id);
+      const search = `${code} ${u.name ?? ""} ${u.email ?? ""} ${u.id}`.toLowerCase();
+      return `<tr data-search="${search.replaceAll('"', "")}">
+        <td>
+          <div class="email">${u.name ?? u.email ?? "—"}</div>
+          ${u.name ? `<div class="muted">${u.email ?? ""}</div>` : ""}
+          <div class="muted" style="font-family:monospace;">${code}</div>
+        </td>
         <td><span class="pill ${active ? "on" : "off"}">${active ? "GRANTED · " + g.tier : "none"}</span></td>
         <td>
           <select data-user="${u.id}" class="tier">
@@ -142,6 +160,7 @@ async function refresh() {
         </td>
       </tr>`;
     }).join("");
+    applySearch();
 
     document.querySelectorAll("[data-grant]").forEach((b) => b.onclick = async () => {
       const id = b.dataset.grant;
@@ -182,6 +201,7 @@ $("setPwBtn").onclick = async () => {
   } catch (e) { flash(e.message, "err"); }
 };
 $("refreshBtn").onclick = refresh;
+$("search").oninput = applySearch;
 $("createBtn").onclick = async () => {
   try {
     await api("create_user", { email: $("newEmail").value.trim(), password: $("newPass").value });
