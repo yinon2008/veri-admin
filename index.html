@@ -5,90 +5,213 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VERI · Admin</title>
 <style>
-  :root { --bg:#000; --card:#111; --line:rgba(255,255,255,.10); --ink:#fff; --dim:#8c8c8c; --green:#30d158; --red:#ff453a; }
+  :root {
+    --bg:#000; --surface:#0c0c0c; --card:#111; --raised:#161616; --control:#1b1b1b;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --ink:#fff; --ink2:rgba(255,255,255,.66); --ink3:rgba(255,255,255,.42);
+    --green:#30d158; --red:#ff453a; --amber:#ffb340; --radius:12px;
+  }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; min-height:100vh; }
-  .wrap { max-width:920px; margin:0 auto; padding:32px 20px 80px; }
-  h1 { font-size:22px; letter-spacing:6px; font-weight:700; text-align:center; margin-bottom:4px; }
-  .sub { text-align:center; color:var(--dim); font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-bottom:28px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:16px; }
-  label { display:block; font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:1px; margin:10px 0 6px; }
-  input, select { width:100%; height:44px; background:#0a0a0a; border:1px solid var(--line); border-radius:10px; color:var(--ink); padding:0 12px; font-size:15px; }
-  button { height:44px; border:none; border-radius:10px; background:#fff; color:#000; font-weight:700; font-size:14px; cursor:pointer; padding:0 18px; }
-  button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line); }
-  button.danger { background:transparent; color:var(--red); border:1px solid rgba(255,69,58,.4); }
-  button:disabled { opacity:.5; cursor:default; }
+  html { color-scheme:dark; }
+  body {
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    font-size:14px; -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── Top bar ─────────────────────────────────────────────────────────── */
+  .topbar {
+    position:sticky; top:0; z-index:10; height:60px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px; background:rgba(0,0,0,.82); backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand { display:flex; align-items:baseline; gap:12px; }
+  .brand .mark { font-size:17px; font-weight:700; letter-spacing:7px; }
+  .brand .env { font-size:10px; letter-spacing:2px; color:var(--ink3); text-transform:uppercase;
+    border:1px solid var(--line); border-radius:999px; padding:3px 10px; }
+  .topbar .who { display:flex; align-items:center; gap:14px; }
+  .topbar .who .email { font-size:13px; color:var(--ink2); }
+
+  /* ── Layout ──────────────────────────────────────────────────────────── */
+  .wrap { max-width:1080px; margin:0 auto; padding:28px 24px 100px; }
+  .grid-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:22px; }
+
+  .card {
+    background:linear-gradient(180deg,var(--raised),var(--card));
+    border:1px solid var(--line); border-radius:16px; padding:22px;
+  }
+  .card + .card, .card + section, section + .card { margin-top:16px; }
+
+  .stat .label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink3); }
+  .stat .value { font-size:28px; font-weight:700; margin-top:8px; font-variant-numeric:tabular-nums; }
+  .stat .sub   { font-size:11px; color:var(--ink3); margin-top:4px; }
+
+  h2 { font-size:14px; font-weight:600; letter-spacing:.3px; }
+  .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+
+  label { display:block; font-size:10px; color:var(--ink3); text-transform:uppercase; letter-spacing:1.6px; margin:0 0 7px; }
+  input, select {
+    width:100%; height:42px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; color:var(--ink); padding:0 12px; font-size:14px; outline:none;
+    transition:border-color .15s;
+  }
+  input:focus, select:focus { border-color:rgba(255,255,255,.35); }
+  input::placeholder { color:var(--ink3); }
+
+  button {
+    height:42px; border:none; border-radius:10px; background:var(--ink); color:#000;
+    font-weight:600; font-size:13px; cursor:pointer; padding:0 18px;
+    transition:transform .06s, opacity .15s;
+  }
+  button:hover { opacity:.9; }
+  button:active { transform:scale(.97); }
+  button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line2); }
+  button.ghost:hover { background:rgba(255,255,255,.05); opacity:1; }
+  button.danger { background:transparent; color:var(--red); border:1px solid rgba(255,69,58,.35); }
+  button.danger:hover { background:rgba(255,69,58,.08); opacity:1; }
+  button.sm { height:34px; padding:0 13px; font-size:12px; border-radius:8px; }
+
   .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   .hidden { display:none !important; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:middle; }
-  th { color:var(--dim); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:1px; }
-  .pill { font-size:11px; padding:3px 10px; border-radius:999px; border:1px solid var(--line); }
-  .pill.on { color:var(--green); border-color:rgba(48,209,88,.4); }
-  .pill.off { color:var(--dim); }
-  .msg { font-size:13px; padding:10px 12px; border-radius:10px; margin-bottom:12px; }
-  .msg.err { background:rgba(255,69,58,.12); color:var(--red); }
-  .msg.ok  { background:rgba(48,209,88,.12); color:var(--green); }
-  .email { font-weight:500; }
-  .muted { color:var(--dim); font-size:12px; }
+
+  /* ── Login ───────────────────────────────────────────────────────────── */
+  .login-shell { min-height:calc(100vh - 60px); display:flex; align-items:center; justify-content:center; }
+  .login-card { width:min(400px,92vw); }
+  .login-card .mark { text-align:center; font-size:22px; font-weight:700; letter-spacing:9px; margin-bottom:4px; }
+  .login-card .sub  { text-align:center; font-size:10px; letter-spacing:3px; color:var(--ink3); text-transform:uppercase; margin-bottom:26px; }
+
+  /* ── Users table ─────────────────────────────────────────────────────── */
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:1.6px;
+    color:var(--ink3); font-weight:500; padding:0 10px 12px;
+    border-bottom:1px solid var(--line);
+  }
+  tbody td { padding:16px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tbody tr { transition:background .12s; }
+  tbody tr:hover { background:rgba(255,255,255,.025); }
+  tbody tr:last-child td { border-bottom:none; }
+
+  .user-cell { display:flex; align-items:center; gap:12px; min-width:220px; }
+  .avatar {
+    width:38px; height:38px; border-radius:50%; flex:none;
+    background:var(--control); border:1px solid var(--line2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; letter-spacing:.5px;
+  }
+  .user-cell .name  { font-size:14px; font-weight:600; }
+  .user-cell .email { font-size:12px; color:var(--ink3); margin-top:1px; }
+  .code {
+    display:inline-flex; align-items:center; gap:5px; margin-top:5px; cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:var(--ink3);
+    border:1px solid var(--line); border-radius:6px; padding:2px 8px; transition:color .15s,border-color .15s;
+  }
+  .code:hover { color:var(--ink); border-color:var(--line2); }
+
+  .pill {
+    display:inline-block; font-size:10px; font-weight:600; letter-spacing:1.2px;
+    text-transform:uppercase; padding:5px 11px; border-radius:999px; border:1px solid var(--line);
+    color:var(--ink3); white-space:nowrap;
+  }
+  .pill.on { color:var(--green); border-color:rgba(48,209,88,.35); background:rgba(48,209,88,.07); }
+  .credits-chip { display:inline-block; margin-top:7px; font-size:11px; color:var(--amber); }
+
+  .controls { display:flex; flex-direction:column; gap:8px; min-width:230px; }
+  .controls .line { display:flex; gap:7px; }
+  .controls select { height:34px; font-size:12px; border-radius:8px; padding:0 8px; }
+  .controls input[type=number] { height:34px; width:64px; font-size:12px; border-radius:8px; text-align:center; }
+
+  /* ── Toasts ──────────────────────────────────────────────────────────── */
+  #toasts { position:fixed; bottom:24px; right:24px; z-index:50; display:flex; flex-direction:column; gap:10px; }
+  .toast {
+    min-width:240px; max-width:340px; padding:13px 16px; border-radius:12px;
+    background:var(--raised); border:1px solid var(--line2); color:var(--ink);
+    font-size:13px; box-shadow:0 12px 40px rgba(0,0,0,.6);
+    animation:slidein .22s ease;
+  }
+  .toast.ok  { border-color:rgba(48,209,88,.4); }
+  .toast.err { border-color:rgba(255,69,58,.45); }
+  @keyframes slidein { from { transform:translateY(10px); opacity:0; } to { transform:none; opacity:1; } }
+
+  .muted { color:var(--ink3); font-size:12px; }
+  @media (max-width:760px) {
+    .wrap { padding:18px 12px 90px; }
+    thead { display:none; }
+    tbody td { display:block; border-bottom:none; padding:6px 4px; }
+    tbody tr { display:block; border-bottom:1px solid var(--line); padding:12px 0; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>V E R I</h1>
-  <div class="sub">Admin Console</div>
-  <div id="msg"></div>
 
-  <!-- Login -->
-  <div id="login" class="card">
+<header class="topbar">
+  <div class="brand"><span class="mark">V E R I</span><span class="env">Admin Console</span></div>
+  <div class="who hidden" id="whoWrap">
+    <span class="email" id="whoami"></span>
+    <button class="ghost sm" id="logoutBtn">Sign out</button>
+  </div>
+</header>
+
+<!-- ── Login ── -->
+<div id="login" class="login-shell">
+  <div class="card login-card">
+    <div class="mark">V E R I</div>
+    <div class="sub">Admin Console</div>
     <label>Admin email</label>
     <input id="email" type="email" autocomplete="username" />
+    <div style="height:14px"></div>
     <label>Password</label>
     <input id="password" type="password" autocomplete="current-password" />
-    <div class="row" style="margin-top:16px;">
-      <button id="loginBtn">Sign in</button>
-      <span class="muted">Admin accounts only.</span>
-    </div>
-  </div>
-
-  <!-- Console -->
-  <div id="console" class="hidden">
-    <div class="card">
-      <div class="row" style="justify-content:space-between;">
-        <div><span class="muted">Signed in as</span> <span id="whoami" class="email"></span></div>
-        <button class="ghost" id="logoutBtn">Sign out</button>
-      </div>
-      <div class="row" style="margin-top:14px; align-items:flex-end;">
-        <div style="flex:1; min-width:180px;"><label>Set new password (for my account)</label><input id="newPw" type="password" autocomplete="new-password" /></div>
-        <button class="ghost" id="setPwBtn">Update password</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <strong>Create user</strong>
-      <div class="row" style="margin-top:12px; align-items:flex-end;">
-        <div style="flex:1; min-width:180px;"><label>Email</label><input id="newEmail" type="email" /></div>
-        <div style="flex:1; min-width:160px;"><label>Password (≥ 8)</label><input id="newPass" type="text" /></div>
-        <button id="createBtn">Create</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between; margin-bottom:8px;">
-        <strong>Users &amp; access</strong>
-        <button class="ghost" id="refreshBtn">Refresh</button>
-      </div>
-      <input id="search" type="search" placeholder="Search by support code, name or email… (e.g. VERI-E3E7A31B)"
-             style="margin:6px 0 14px;" />
-      <div style="overflow-x:auto;">
-        <table>
-          <thead><tr><th>User</th><th>Access</th><th>Grant tier</th><th></th></tr></thead>
-          <tbody id="users"></tbody>
-        </table>
-      </div>
-    </div>
+    <div style="height:22px"></div>
+    <button id="loginBtn" style="width:100%;">Sign in</button>
+    <p class="muted" style="text-align:center; margin-top:14px;">Admin accounts only. All actions are verified server-side.</p>
   </div>
 </div>
+
+<!-- ── Console ── -->
+<main id="console" class="wrap hidden">
+
+  <div class="grid-stats">
+    <div class="card stat"><div class="label">Registered users</div><div class="value" id="statUsers">—</div><div class="sub">signed-up accounts</div></div>
+    <div class="card stat"><div class="label">Active grants</div><div class="value" id="statGrants">—</div><div class="sub">tier access granted</div></div>
+    <div class="card stat"><div class="label">Checks outstanding</div><div class="value" id="statCredits">—</div><div class="sub">granted, not yet used</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Create user</h2></div>
+    <div class="row" style="align-items:flex-end;">
+      <div style="flex:2; min-width:200px;"><label>Email</label><input id="newEmail" type="email" placeholder="user@example.com" /></div>
+      <div style="flex:1.4; min-width:170px;"><label>Password (min 8)</label><input id="newPass" type="text" autocomplete="off" /></div>
+      <button id="createBtn">Create user</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Users &amp; access</h2>
+      <button class="ghost sm" id="refreshBtn">Refresh</button>
+    </div>
+    <input id="search" type="search" placeholder="Search by support code, name or email — e.g. VERI-E3E7A31B" style="margin-bottom:18px;" />
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>User</th><th>Access</th><th>Manage</th><th></th></tr></thead>
+        <tbody id="users"><tr><td colspan="4" class="muted" style="text-align:center; padding:30px;">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>My account</h2></div>
+    <div class="row" style="align-items:flex-end;">
+      <div style="flex:1; min-width:200px;"><label>Set new password</label><input id="newPw" type="password" autocomplete="new-password" /></div>
+      <button class="ghost" id="setPwBtn">Update password</button>
+    </div>
+  </div>
+
+</main>
+
+<div id="toasts"></div>
 
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -102,13 +225,15 @@ const sb = createClient(SUPABASE_URL, ANON_KEY);
 const $ = (id) => document.getElementById(id);
 const show = (el, on) => el.classList.toggle("hidden", !on);
 
-function flash(text, kind = "ok") {
-  const m = $("msg");
-  m.innerHTML = `<div class="msg ${kind}">${text}</div>`;
-  if (kind === "ok") setTimeout(() => (m.innerHTML = ""), 3500);
+function toast(text, kind = "ok") {
+  const t = document.createElement("div");
+  t.className = `toast ${kind}`;
+  t.textContent = text;
+  $("toasts").appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity .3s"; }, 3200);
+  setTimeout(() => t.remove(), 3600);
 }
 
-// Call the Edge Function with the admin's session token (never the service key).
 async function api(action, body = {}) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) throw new Error("Not signed in");
@@ -124,10 +249,15 @@ async function api(action, body = {}) {
 
 // Same derivation as the iOS app's "Support Code" row in Profile.
 const supportCode = (id) => "VERI-" + id.replaceAll("-", "").slice(0, 8).toUpperCase();
+const initials = (nameOrEmail) => {
+  const src = (nameOrEmail ?? "?").split("@")[0];
+  const parts = src.split(/[\s._-]+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? "?") + (parts[1]?.[0] ?? "")).toUpperCase();
+};
 
 function applySearch() {
   const q = $("search").value.trim().toLowerCase();
-  document.querySelectorAll("#users tr").forEach((tr) => {
+  document.querySelectorAll("#users tr[data-search]").forEach((tr) => {
     tr.style.display = !q || tr.dataset.search.includes(q) ? "" : "none";
   });
 }
@@ -135,50 +265,95 @@ function applySearch() {
 async function refresh() {
   try {
     const { users } = await api("list_users");
+
+    // Stats
+    const activeGrant = (u) => u.grant && u.grant.active &&
+      (!u.grant.expires_at || new Date(u.grant.expires_at) > new Date());
+    $("statUsers").textContent   = users.length;
+    $("statGrants").textContent  = users.filter(activeGrant).length;
+    $("statCredits").textContent = users.reduce((s, u) => s + Math.max(0, u.credits ?? 0), 0);
+
     $("users").innerHTML = users.map((u) => {
-      const g = u.grant;
-      const active = g && g.active && (!g.expires_at || new Date(g.expires_at) > new Date());
+      const active = activeGrant(u);
       const code = supportCode(u.id);
-      const search = `${code} ${u.name ?? ""} ${u.email ?? ""} ${u.id}`.toLowerCase();
-      return `<tr data-search="${search.replaceAll('"', "")}">
+      const credits = u.credits ?? 0;
+      const search = `${code} ${u.name ?? ""} ${u.email ?? ""} ${u.id}`.toLowerCase().replaceAll('"', "");
+      return `<tr data-search="${search}">
         <td>
-          <div class="email">${u.name ?? u.email ?? "—"}</div>
-          ${u.name ? `<div class="muted">${u.email ?? ""}</div>` : ""}
-          <div class="muted" style="font-family:monospace;">${code}</div>
+          <div class="user-cell">
+            <div class="avatar">${initials(u.name ?? u.email)}</div>
+            <div>
+              <div class="name">${u.name ?? u.email ?? "—"}</div>
+              ${u.name ? `<div class="email">${u.email ?? ""}</div>` : ""}
+              <span class="code" data-copy="${code}" title="Copy support code">${code}</span>
+            </div>
+          </div>
         </td>
-        <td><span class="pill ${active ? "on" : "off"}">${active ? "GRANTED · " + g.tier : "none"}</span></td>
         <td>
-          <select data-user="${u.id}" class="tier">
-            <option value="full">full</option>
-            <option value="enthusiast">enthusiast</option>
-            <option value="commercial">commercial</option>
-          </select>
+          <span class="pill ${active ? "on" : ""}">${active ? u.grant.tier : "no grant"}</span>
+          ${credits > 0 ? `<div class="credits-chip">🎟 ${credits} check${credits === 1 ? "" : "s"} left</div>` : ""}
         </td>
-        <td class="row">
-          <button data-grant="${u.id}">Grant</button>
-          <button class="danger" data-revoke="${u.id}">Revoke</button>
+        <td>
+          <div class="controls">
+            <div class="line">
+              <select data-user="${u.id}" class="tier" title="Access tier">
+                <option value="full">full — unlimited</option>
+                <option value="enthusiast">enthusiast — 20/mo</option>
+                <option value="commercial">commercial</option>
+              </select>
+              <select data-user="${u.id}" class="expiry" title="Grant duration">
+                <option value="">forever</option>
+                <option value="7">7 days</option>
+                <option value="30">30 days</option>
+              </select>
+            </div>
+            <div class="line">
+              <input type="number" min="1" max="100" value="1" data-user="${u.id}" class="amount" title="Checks to add" />
+              <button class="ghost sm" data-credits="${u.id}">Add checks</button>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="controls" style="min-width:110px;">
+            <button class="sm" data-grant="${u.id}">Grant</button>
+            <button class="danger sm" data-revoke="${u.id}">Revoke</button>
+          </div>
         </td>
       </tr>`;
     }).join("");
     applySearch();
 
+    document.querySelectorAll("[data-copy]").forEach((el) => el.onclick = async () => {
+      await navigator.clipboard.writeText(el.dataset.copy);
+      toast(`Copied ${el.dataset.copy}`);
+    });
     document.querySelectorAll("[data-grant]").forEach((b) => b.onclick = async () => {
       const id = b.dataset.grant;
       const tier = document.querySelector(`.tier[data-user="${id}"]`).value;
-      try { await api("grant_access", { user_id: id, tier }); flash("Access granted"); refresh(); }
-      catch (e) { flash(e.message, "err"); }
+      const days = document.querySelector(`.expiry[data-user="${id}"]`).value;
+      const expires_at = days ? new Date(Date.now() + Number(days) * 864e5).toISOString() : null;
+      try { await api("grant_access", { user_id: id, tier, expires_at }); toast(`Granted ${tier}${days ? ` for ${days} days` : ""}`); refresh(); }
+      catch (e) { toast(e.message, "err"); }
     });
     document.querySelectorAll("[data-revoke]").forEach((b) => b.onclick = async () => {
-      try { await api("revoke_access", { user_id: b.dataset.revoke }); flash("Access revoked"); refresh(); }
-      catch (e) { flash(e.message, "err"); }
+      try { await api("revoke_access", { user_id: b.dataset.revoke }); toast("Access revoked"); refresh(); }
+      catch (e) { toast(e.message, "err"); }
     });
-  } catch (e) { flash(e.message, "err"); }
+    document.querySelectorAll("[data-credits]").forEach((b) => b.onclick = async () => {
+      const id = b.dataset.credits;
+      const amount = parseInt(document.querySelector(`.amount[data-user="${id}"]`).value, 10);
+      if (!Number.isInteger(amount) || amount < 1) { toast("Enter a valid amount", "err"); return; }
+      try { await api("add_credits", { user_id: id, amount }); toast(`Added ${amount} check${amount === 1 ? "" : "s"}`); refresh(); }
+      catch (e) { toast(e.message, "err"); }
+    });
+  } catch (e) { toast(e.message, "err"); }
 }
 
 async function renderAuth() {
   const { data: { session } } = await sb.auth.getSession();
   show($("login"), !session);
   show($("console"), !!session);
+  show($("whoWrap"), !!session);
   if (session) { $("whoami").textContent = session.user.email; refresh(); }
 }
 
@@ -187,9 +362,18 @@ $("loginBtn").onclick = async () => {
     const { error } = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
     if (error) throw error;
     renderAuth();
-  } catch (e) { flash(e.message, "err"); }
+  } catch (e) { toast(e.message, "err"); }
 };
+$("password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("loginBtn").click(); });
 $("logoutBtn").onclick = async () => { await sb.auth.signOut(); renderAuth(); };
+$("refreshBtn").onclick = refresh;
+$("search").oninput = applySearch;
+$("createBtn").onclick = async () => {
+  try {
+    await api("create_user", { email: $("newEmail").value.trim(), password: $("newPass").value });
+    toast("User created"); $("newEmail").value = ""; $("newPass").value = ""; refresh();
+  } catch (e) { toast(e.message, "err"); }
+};
 $("setPwBtn").onclick = async () => {
   try {
     const pw = $("newPw").value;
@@ -197,16 +381,8 @@ $("setPwBtn").onclick = async () => {
     const { error } = await sb.auth.updateUser({ password: pw });
     if (error) throw error;
     $("newPw").value = "";
-    flash("Password updated — use it for future sign-ins");
-  } catch (e) { flash(e.message, "err"); }
-};
-$("refreshBtn").onclick = refresh;
-$("search").oninput = applySearch;
-$("createBtn").onclick = async () => {
-  try {
-    await api("create_user", { email: $("newEmail").value.trim(), password: $("newPass").value });
-    flash("User created"); $("newEmail").value = ""; $("newPass").value = ""; refresh();
-  } catch (e) { flash(e.message, "err"); }
+    toast("Password updated — use it for future sign-ins");
+  } catch (e) { toast(e.message, "err"); }
 };
 
 renderAuth();
