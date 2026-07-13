@@ -4,212 +4,316 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VERI · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#000; --surface:#0c0c0c; --card:#111; --raised:#161616; --control:#1b1b1b;
-    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
-    --ink:#fff; --ink2:rgba(255,255,255,.66); --ink3:rgba(255,255,255,.42);
-    --green:#30d158; --red:#ff453a; --amber:#ffb340; --radius:12px;
+    --bg:#000; --surface:#0b0b0c; --card:#101012; --raised:#151517; --control:#1a1a1d;
+    --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13); --line3:rgba(255,255,255,.22);
+    --ink:#fff; --ink2:rgba(255,255,255,.64); --ink3:rgba(255,255,255,.40); --ink4:rgba(255,255,255,.24);
+    --green:#30d158; --red:#ff453a; --amber:#ffb340;
+    --r-sm:9px; --r-md:13px; --r-lg:18px;
+    --shadow:0 20px 60px rgba(0,0,0,.55);
   }
   * { box-sizing:border-box; margin:0; padding:0; }
-  html { color-scheme:dark; }
+  html { color-scheme:dark; scroll-behavior:smooth; }
   body {
     background:var(--bg); color:var(--ink); min-height:100vh;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
-    font-size:14px; -webkit-font-smoothing:antialiased;
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:14px; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  /* Ambient backdrop — layered glows that give the page depth */
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(1100px 500px at 15% -10%, rgba(255,255,255,.05), transparent 60%),
+      radial-gradient(900px 600px at 110% 10%, rgba(255,255,255,.035), transparent 55%),
+      radial-gradient(700px 700px at 50% 120%, rgba(255,255,255,.025), transparent 60%);
   }
 
-  /* ── Top bar ─────────────────────────────────────────────────────────── */
-  .topbar {
-    position:sticky; top:0; z-index:10; height:60px;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 28px; background:rgba(0,0,0,.82); backdrop-filter:blur(14px);
-    border-bottom:1px solid var(--line);
+  /* ═══ Shell: sidebar + main ═══ */
+  .shell { display:grid; grid-template-columns:248px 1fr; min-height:100vh; }
+  .sidebar {
+    position:sticky; top:0; height:100vh; padding:30px 22px;
+    display:flex; flex-direction:column; gap:8px;
+    border-right:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(255,255,255,.022), transparent 30%);
   }
-  .brand { display:flex; align-items:baseline; gap:12px; }
-  .brand .mark { font-size:17px; font-weight:700; letter-spacing:7px; }
-  .brand .env { font-size:10px; letter-spacing:2px; color:var(--ink3); text-transform:uppercase;
-    border:1px solid var(--line); border-radius:999px; padding:3px 10px; }
-  .topbar .who { display:flex; align-items:center; gap:14px; }
-  .topbar .who .email { font-size:13px; color:var(--ink2); }
+  .logo { display:flex; align-items:center; gap:12px; padding:4px 10px 26px; }
+  .logo .monogram {
+    width:38px; height:38px; border-radius:11px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(145deg,#fff,#b9b9b9); color:#000;
+    font-weight:800; font-size:16px; letter-spacing:0;
+    box-shadow:0 6px 22px rgba(255,255,255,.14);
+  }
+  .logo .word { font-weight:700; letter-spacing:6px; font-size:15px; }
+  .logo .sub  { font-size:9px; letter-spacing:2.5px; color:var(--ink3); text-transform:uppercase; margin-top:2px; }
 
-  /* ── Layout ──────────────────────────────────────────────────────────── */
-  .wrap { max-width:1080px; margin:0 auto; padding:28px 24px 100px; }
-  .grid-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:22px; }
+  .nav a {
+    display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:var(--r-sm);
+    color:var(--ink2); text-decoration:none; font-size:13.5px; font-weight:500;
+    transition:background .15s, color .15s;
+  }
+  .nav a:hover { background:rgba(255,255,255,.05); color:var(--ink); }
+  .nav a .ico { width:17px; text-align:center; opacity:.8; }
+  .nav .section { font-size:9.5px; letter-spacing:2.2px; text-transform:uppercase; color:var(--ink4); padding:20px 12px 8px; }
 
+  .side-foot { margin-top:auto; }
+  .userchip {
+    display:flex; align-items:center; gap:11px; padding:11px 12px;
+    border:1px solid var(--line); border-radius:var(--r-md); background:var(--surface);
+  }
+  .userchip .avatar { width:30px; height:30px; font-size:11px; }
+  .userchip .em { font-size:12px; color:var(--ink2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .userchip button { margin-left:auto; }
+
+  main { padding:34px 42px 120px; max-width:1160px; width:100%; }
+  .pagehead { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:26px; }
+  .pagehead h1 { font-size:24px; font-weight:700; letter-spacing:-.3px; }
+  .pagehead p  { color:var(--ink3); font-size:13px; margin-top:5px; }
+
+  /* ═══ Cards ═══ */
   .card {
-    background:linear-gradient(180deg,var(--raised),var(--card));
-    border:1px solid var(--line); border-radius:16px; padding:22px;
+    position:relative; border-radius:var(--r-lg); padding:24px;
+    background:linear-gradient(180deg, var(--raised), var(--card) 55%);
+    border:1px solid var(--line);
   }
-  .card + .card, .card + section, section + .card { margin-top:16px; }
+  .card::before {  /* top edge light */
+    content:""; position:absolute; inset:0 0 auto 0; height:1px; border-radius:inherit;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+    opacity:.5;
+  }
+  .card + .card { margin-top:18px; }
+  .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  h2 { font-size:15px; font-weight:600; letter-spacing:-.1px; }
+  .hint { font-size:12px; color:var(--ink3); margin-top:3px; }
 
-  .stat .label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink3); }
-  .stat .value { font-size:28px; font-weight:700; margin-top:8px; font-variant-numeric:tabular-nums; }
-  .stat .sub   { font-size:11px; color:var(--ink3); margin-top:4px; }
+  /* ═══ Stats ═══ */
+  .grid-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:18px; }
+  .stat { padding:22px 24px; }
+  .stat .label { font-size:10px; letter-spacing:2.2px; text-transform:uppercase; color:var(--ink3); display:flex; align-items:center; gap:8px; }
+  .stat .dot { width:6px; height:6px; border-radius:50%; background:var(--ink3); }
+  .stat.s-users  .dot { background:#fff; box-shadow:0 0 10px rgba(255,255,255,.6); }
+  .stat.s-grants .dot { background:var(--green); box-shadow:0 0 10px rgba(48,209,88,.5); }
+  .stat.s-checks .dot { background:var(--amber); box-shadow:0 0 10px rgba(255,179,64,.5); }
+  .stat .value { font-size:34px; font-weight:800; letter-spacing:-1px; margin-top:12px; font-variant-numeric:tabular-nums; }
+  .stat .sub { font-size:11.5px; color:var(--ink3); margin-top:5px; }
 
-  h2 { font-size:14px; font-weight:600; letter-spacing:.3px; }
-  .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-
-  label { display:block; font-size:10px; color:var(--ink3); text-transform:uppercase; letter-spacing:1.6px; margin:0 0 7px; }
+  /* ═══ Forms ═══ */
+  label { display:block; font-size:10px; color:var(--ink3); text-transform:uppercase; letter-spacing:1.8px; margin:0 0 8px; font-weight:600; }
   input, select {
-    width:100%; height:42px; background:var(--surface); border:1px solid var(--line);
-    border-radius:10px; color:var(--ink); padding:0 12px; font-size:14px; outline:none;
-    transition:border-color .15s;
+    width:100%; height:44px; background:rgba(0,0,0,.45); border:1px solid var(--line2);
+    border-radius:var(--r-sm); color:var(--ink); padding:0 13px; font-size:14px; outline:none;
+    font-family:inherit; transition:border-color .18s, box-shadow .18s;
   }
-  input:focus, select:focus { border-color:rgba(255,255,255,.35); }
-  input::placeholder { color:var(--ink3); }
+  input:focus, select:focus { border-color:var(--line3); box-shadow:0 0 0 3px rgba(255,255,255,.06); }
+  input::placeholder { color:var(--ink4); }
 
   button {
-    height:42px; border:none; border-radius:10px; background:var(--ink); color:#000;
-    font-weight:600; font-size:13px; cursor:pointer; padding:0 18px;
-    transition:transform .06s, opacity .15s;
+    height:44px; border:none; border-radius:var(--r-sm); background:#fff; color:#000;
+    font-weight:600; font-size:13px; cursor:pointer; padding:0 20px; font-family:inherit;
+    transition:transform .08s, box-shadow .18s, opacity .15s;
+    box-shadow:0 4px 18px rgba(255,255,255,.10);
   }
-  button:hover { opacity:.9; }
-  button:active { transform:scale(.97); }
-  button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line2); }
-  button.ghost:hover { background:rgba(255,255,255,.05); opacity:1; }
-  button.danger { background:transparent; color:var(--red); border:1px solid rgba(255,69,58,.35); }
-  button.danger:hover { background:rgba(255,69,58,.08); opacity:1; }
-  button.sm { height:34px; padding:0 13px; font-size:12px; border-radius:8px; }
+  button:hover { box-shadow:0 6px 26px rgba(255,255,255,.18); }
+  button:active { transform:scale(.965); }
+  button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line2); box-shadow:none; }
+  button.ghost:hover { background:rgba(255,255,255,.06); border-color:var(--line3); }
+  button.danger { background:transparent; color:var(--red); border:1px solid rgba(255,69,58,.32); box-shadow:none; }
+  button.danger:hover { background:rgba(255,69,58,.09); border-color:rgba(255,69,58,.55); }
+  button.sm { height:35px; padding:0 14px; font-size:12px; border-radius:8px; }
 
-  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
   .hidden { display:none !important; }
 
-  /* ── Login ───────────────────────────────────────────────────────────── */
-  .login-shell { min-height:calc(100vh - 60px); display:flex; align-items:center; justify-content:center; }
-  .login-card { width:min(400px,92vw); }
-  .login-card .mark { text-align:center; font-size:22px; font-weight:700; letter-spacing:9px; margin-bottom:4px; }
-  .login-card .sub  { text-align:center; font-size:10px; letter-spacing:3px; color:var(--ink3); text-transform:uppercase; margin-bottom:26px; }
-
-  /* ── Users table ─────────────────────────────────────────────────────── */
-  table { width:100%; border-collapse:collapse; }
-  thead th {
-    text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:1.6px;
-    color:var(--ink3); font-weight:500; padding:0 10px 12px;
-    border-bottom:1px solid var(--line);
+  /* ═══ Login ═══ */
+  .login-shell { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-card { width:min(410px,94vw); padding:40px 36px 32px; animation:rise .5s cubic-bezier(.2,.8,.2,1); }
+  .login-card .monogram {
+    width:54px; height:54px; margin:0 auto 18px; border-radius:16px;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(145deg,#fff,#b9b9b9); color:#000; font-weight:800; font-size:22px;
+    box-shadow:0 10px 40px rgba(255,255,255,.18);
   }
-  tbody td { padding:16px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
-  tbody tr { transition:background .12s; }
-  tbody tr:hover { background:rgba(255,255,255,.025); }
-  tbody tr:last-child td { border-bottom:none; }
+  .login-card .word { text-align:center; font-size:19px; font-weight:700; letter-spacing:8px; }
+  .login-card .sub  { text-align:center; font-size:9.5px; letter-spacing:3.2px; color:var(--ink3); text-transform:uppercase; margin:6px 0 30px; }
+  @keyframes rise { from { transform:translateY(14px); opacity:0; } to { transform:none; opacity:1; } }
 
-  .user-cell { display:flex; align-items:center; gap:12px; min-width:220px; }
+  /* ═══ Users list ═══ */
+  .searchwrap { position:relative; margin-bottom:20px; }
+  .searchwrap .mag { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--ink3); font-size:14px; }
+  .searchwrap input { padding-left:38px; }
+  .searchwrap kbd {
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-size:10px; color:var(--ink4); border:1px solid var(--line); border-radius:5px; padding:2px 7px;
+    font-family:inherit;
+  }
+
+  .urow {
+    display:grid; grid-template-columns:minmax(230px,1.4fr) minmax(130px,.8fr) minmax(240px,1.2fr) 120px;
+    gap:18px; align-items:center; padding:18px 6px;
+    border-bottom:1px solid var(--line); animation:fadein .35s both;
+  }
+  .urow:last-child { border-bottom:none; }
+  .urow:hover { background:linear-gradient(90deg, transparent, rgba(255,255,255,.022), transparent); }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  .user-cell { display:flex; align-items:center; gap:14px; min-width:0; }
   .avatar {
-    width:38px; height:38px; border-radius:50%; flex:none;
-    background:var(--control); border:1px solid var(--line2);
+    width:42px; height:42px; border-radius:50%; flex:none;
     display:flex; align-items:center; justify-content:center;
     font-size:13px; font-weight:700; letter-spacing:.5px;
+    background:linear-gradient(145deg,#242427,#131315); border:1px solid var(--line2);
   }
-  .user-cell .name  { font-size:14px; font-weight:600; }
-  .user-cell .email { font-size:12px; color:var(--ink3); margin-top:1px; }
+  .user-cell .name { font-size:14px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .user-cell .email { font-size:12px; color:var(--ink3); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .meta { display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap; }
   .code {
-    display:inline-flex; align-items:center; gap:5px; margin-top:5px; cursor:pointer;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:var(--ink3);
-    border:1px solid var(--line); border-radius:6px; padding:2px 8px; transition:color .15s,border-color .15s;
+    display:inline-flex; align-items:center; gap:5px; cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:10.5px; color:var(--ink3);
+    border:1px solid var(--line); border-radius:6px; padding:2.5px 8px;
+    transition:color .15s, border-color .15s;
   }
-  .code:hover { color:var(--ink); border-color:var(--line2); }
+  .code:hover { color:var(--ink); border-color:var(--line3); }
+  .lastseen { font-size:10.5px; color:var(--ink4); }
 
   .pill {
-    display:inline-block; font-size:10px; font-weight:600; letter-spacing:1.2px;
-    text-transform:uppercase; padding:5px 11px; border-radius:999px; border:1px solid var(--line);
+    display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; letter-spacing:1.4px;
+    text-transform:uppercase; padding:6px 12px; border-radius:999px; border:1px solid var(--line);
     color:var(--ink3); white-space:nowrap;
   }
-  .pill.on { color:var(--green); border-color:rgba(48,209,88,.35); background:rgba(48,209,88,.07); }
-  .credits-chip { display:inline-block; margin-top:7px; font-size:11px; color:var(--amber); }
+  .pill.on { color:var(--green); border-color:rgba(48,209,88,.35); background:rgba(48,209,88,.08); }
+  .pill.on::before { content:""; width:5px; height:5px; border-radius:50%; background:var(--green); box-shadow:0 0 8px rgba(48,209,88,.8); }
+  .credits-chip { display:block; margin-top:8px; font-size:11.5px; color:var(--amber); font-weight:500; }
 
-  .controls { display:flex; flex-direction:column; gap:8px; min-width:230px; }
-  .controls .line { display:flex; gap:7px; }
-  .controls select { height:34px; font-size:12px; border-radius:8px; padding:0 8px; }
-  .controls input[type=number] { height:34px; width:64px; font-size:12px; border-radius:8px; text-align:center; }
+  .controls { display:flex; flex-direction:column; gap:8px; }
+  .controls .line { display:flex; gap:8px; }
+  .controls select { height:35px; font-size:12px; border-radius:8px; padding:0 9px; }
+  .controls input[type=number] { height:35px; width:62px; font-size:12.5px; border-radius:8px; text-align:center; }
+  .actions { display:flex; flex-direction:column; gap:8px; }
 
-  /* ── Toasts ──────────────────────────────────────────────────────────── */
-  #toasts { position:fixed; bottom:24px; right:24px; z-index:50; display:flex; flex-direction:column; gap:10px; }
+  /* skeleton shimmer */
+  .skel { border-radius:8px; background:linear-gradient(90deg,#141416 25%,#1d1d20 50%,#141416 75%); background-size:200% 100%; animation:shimmer 1.3s infinite; }
+  @keyframes shimmer { to { background-position:-200% 0; } }
+  .empty { text-align:center; color:var(--ink3); padding:44px 0; font-size:13px; }
+
+  /* ═══ Toasts ═══ */
+  #toasts { position:fixed; bottom:26px; right:26px; z-index:50; display:flex; flex-direction:column; gap:10px; }
   .toast {
-    min-width:240px; max-width:340px; padding:13px 16px; border-radius:12px;
-    background:var(--raised); border:1px solid var(--line2); color:var(--ink);
-    font-size:13px; box-shadow:0 12px 40px rgba(0,0,0,.6);
-    animation:slidein .22s ease;
+    display:flex; align-items:center; gap:11px;
+    min-width:250px; max-width:350px; padding:14px 17px; border-radius:var(--r-md);
+    background:rgba(22,22,24,.92); backdrop-filter:blur(12px);
+    border:1px solid var(--line2); color:var(--ink); font-size:13px; font-weight:500;
+    box-shadow:var(--shadow); animation:slidein .25s cubic-bezier(.2,.8,.2,1);
   }
-  .toast.ok  { border-color:rgba(48,209,88,.4); }
-  .toast.err { border-color:rgba(255,69,58,.45); }
-  @keyframes slidein { from { transform:translateY(10px); opacity:0; } to { transform:none; opacity:1; } }
+  .toast .tdot { width:8px; height:8px; border-radius:50%; flex:none; }
+  .toast.ok  .tdot { background:var(--green); box-shadow:0 0 10px rgba(48,209,88,.8); }
+  .toast.err .tdot { background:var(--red);   box-shadow:0 0 10px rgba(255,69,58,.8); }
+  @keyframes slidein { from { transform:translateX(24px); opacity:0; } to { transform:none; opacity:1; } }
 
   .muted { color:var(--ink3); font-size:12px; }
-  @media (max-width:760px) {
-    .wrap { padding:18px 12px 90px; }
-    thead { display:none; }
-    tbody td { display:block; border-bottom:none; padding:6px 4px; }
-    tbody tr { display:block; border-bottom:1px solid var(--line); padding:12px 0; }
+
+  @media (max-width:980px) {
+    .shell { grid-template-columns:1fr; }
+    .sidebar { position:static; height:auto; flex-direction:row; align-items:center; padding:16px 18px; border-right:none; border-bottom:1px solid var(--line); }
+    .logo { padding:0; }
+    .nav, .side-foot .userchip .em { display:none; }
+    .side-foot { margin:0 0 0 auto; }
+    main { padding:22px 16px 100px; }
+    .urow { grid-template-columns:1fr; gap:12px; }
   }
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand"><span class="mark">V E R I</span><span class="env">Admin Console</span></div>
-  <div class="who hidden" id="whoWrap">
-    <span class="email" id="whoami"></span>
-    <button class="ghost sm" id="logoutBtn">Sign out</button>
-  </div>
-</header>
-
-<!-- ── Login ── -->
+<!-- ═══ Login ═══ -->
 <div id="login" class="login-shell">
   <div class="card login-card">
-    <div class="mark">V E R I</div>
+    <div class="monogram">V</div>
+    <div class="word">V E R I</div>
     <div class="sub">Admin Console</div>
     <label>Admin email</label>
     <input id="email" type="email" autocomplete="username" />
-    <div style="height:14px"></div>
+    <div style="height:16px"></div>
     <label>Password</label>
     <input id="password" type="password" autocomplete="current-password" />
-    <div style="height:22px"></div>
+    <div style="height:24px"></div>
     <button id="loginBtn" style="width:100%;">Sign in</button>
-    <p class="muted" style="text-align:center; margin-top:14px;">Admin accounts only. All actions are verified server-side.</p>
+    <p class="muted" style="text-align:center; margin-top:16px;">Admin accounts only · verified server-side</p>
   </div>
 </div>
 
-<!-- ── Console ── -->
-<main id="console" class="wrap hidden">
-
-  <div class="grid-stats">
-    <div class="card stat"><div class="label">Registered users</div><div class="value" id="statUsers">—</div><div class="sub">signed-up accounts</div></div>
-    <div class="card stat"><div class="label">Active grants</div><div class="value" id="statGrants">—</div><div class="sub">tier access granted</div></div>
-    <div class="card stat"><div class="label">Checks outstanding</div><div class="value" id="statCredits">—</div><div class="sub">granted, not yet used</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-head"><h2>Create user</h2></div>
-    <div class="row" style="align-items:flex-end;">
-      <div style="flex:2; min-width:200px;"><label>Email</label><input id="newEmail" type="email" placeholder="user@example.com" /></div>
-      <div style="flex:1.4; min-width:170px;"><label>Password (min 8)</label><input id="newPass" type="text" autocomplete="off" /></div>
-      <button id="createBtn">Create user</button>
+<!-- ═══ Console ═══ -->
+<div id="console" class="shell hidden">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="monogram">V</div>
+      <div><div class="word">VERI</div><div class="sub">Admin Console</div></div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="card-head">
-      <h2>Users &amp; access</h2>
-      <button class="ghost sm" id="refreshBtn">Refresh</button>
+    <nav class="nav">
+      <div class="section">Manage</div>
+      <a href="#overview"><span class="ico">◈</span>Overview</a>
+      <a href="#create"><span class="ico">＋</span>Create user</a>
+      <a href="#usersCard"><span class="ico">👥</span>Users &amp; access</a>
+      <div class="section">Settings</div>
+      <a href="#account"><span class="ico">🔐</span>My account</a>
+    </nav>
+    <div class="side-foot">
+      <div class="userchip">
+        <div class="avatar" id="meAvatar">—</div>
+        <div class="em" id="whoami"></div>
+        <button class="ghost sm" id="logoutBtn">Out</button>
+      </div>
     </div>
-    <input id="search" type="search" placeholder="Search by support code, name or email — e.g. VERI-E3E7A31B" style="margin-bottom:18px;" />
-    <div style="overflow-x:auto;">
-      <table>
-        <thead><tr><th>User</th><th>Access</th><th>Manage</th><th></th></tr></thead>
-        <tbody id="users"><tr><td colspan="4" class="muted" style="text-align:center; padding:30px;">Loading…</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+  </aside>
 
-  <div class="card">
-    <div class="card-head"><h2>My account</h2></div>
-    <div class="row" style="align-items:flex-end;">
-      <div style="flex:1; min-width:200px;"><label>Set new password</label><input id="newPw" type="password" autocomplete="new-password" /></div>
-      <button class="ghost" id="setPwBtn">Update password</button>
+  <main>
+    <div class="pagehead" id="overview">
+      <div><h1>Overview</h1><p>Live access control for the VERI app</p></div>
+      <button class="ghost sm" id="refreshBtn">↻ Refresh</button>
     </div>
-  </div>
 
-</main>
+    <div class="grid-stats">
+      <div class="card stat s-users"><div class="label"><span class="dot"></span>Registered users</div><div class="value" id="statUsers">—</div><div class="sub">signed-up accounts</div></div>
+      <div class="card stat s-grants"><div class="label"><span class="dot"></span>Active grants</div><div class="value" id="statGrants">—</div><div class="sub">tier access granted</div></div>
+      <div class="card stat s-checks"><div class="label"><span class="dot"></span>Checks outstanding</div><div class="value" id="statCredits">—</div><div class="sub">granted, not yet used</div></div>
+    </div>
+
+    <div class="card" id="create">
+      <div class="card-head"><div><h2>Create user</h2><div class="hint">Instantly usable — they can sign into the app right away</div></div></div>
+      <div class="row" style="align-items:flex-end;">
+        <div style="flex:2; min-width:210px;"><label>Email</label><input id="newEmail" type="email" placeholder="user@example.com" /></div>
+        <div style="flex:1.4; min-width:180px;"><label>Password (min 8)</label><input id="newPass" type="text" autocomplete="off" /></div>
+        <button id="createBtn">Create user</button>
+      </div>
+    </div>
+
+    <div class="card" id="usersCard">
+      <div class="card-head">
+        <div><h2>Users &amp; access</h2><div class="hint">Grant tiers, gift checks, or revoke — applies in the app within seconds</div></div>
+      </div>
+      <div class="searchwrap">
+        <span class="mag">⌕</span>
+        <input id="search" type="search" placeholder="Search by support code, name or email…" />
+        <kbd>/</kbd>
+      </div>
+      <div id="users">
+        <div class="urow"><div class="user-cell"><div class="skel" style="width:42px;height:42px;border-radius:50%;"></div><div style="flex:1"><div class="skel" style="height:13px;width:60%;"></div><div class="skel" style="height:10px;width:40%;margin-top:8px;"></div></div></div><div class="skel" style="height:24px;width:90px;border-radius:999px;"></div><div class="skel" style="height:35px;"></div><div class="skel" style="height:35px;"></div></div>
+        <div class="urow"><div class="user-cell"><div class="skel" style="width:42px;height:42px;border-radius:50%;"></div><div style="flex:1"><div class="skel" style="height:13px;width:50%;"></div><div class="skel" style="height:10px;width:35%;margin-top:8px;"></div></div></div><div class="skel" style="height:24px;width:90px;border-radius:999px;"></div><div class="skel" style="height:35px;"></div><div class="skel" style="height:35px;"></div></div>
+      </div>
+    </div>
+
+    <div class="card" id="account">
+      <div class="card-head"><div><h2>My account</h2><div class="hint">Change the password you sign in with</div></div></div>
+      <div class="row" style="align-items:flex-end;">
+        <div style="flex:1; min-width:210px;"><label>Set new password</label><input id="newPw" type="password" autocomplete="new-password" /></div>
+        <button class="ghost" id="setPwBtn">Update password</button>
+      </div>
+    </div>
+  </main>
+</div>
 
 <div id="toasts"></div>
 
@@ -220,6 +324,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = "https://hphhaqfvxgqvensjjunf.supabase.co";
 const ANON_KEY     = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwaGhhcWZ2eGdxdmVuc2pqdW5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNTkxOTEsImV4cCI6MjA5NTYzNTE5MX0.8eKxo6mWjAlRrrHknPFZzyFdEzjs3VPCDphxssfXbsI";
 const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/admin-api`;
+const PREVIEW = location.hash === "#preview";   // layout preview with sample data (no API)
 
 const sb = createClient(SUPABASE_URL, ANON_KEY);
 const $ = (id) => document.getElementById(id);
@@ -228,10 +333,11 @@ const show = (el, on) => el.classList.toggle("hidden", !on);
 function toast(text, kind = "ok") {
   const t = document.createElement("div");
   t.className = `toast ${kind}`;
-  t.textContent = text;
+  t.innerHTML = `<span class="tdot"></span><span></span>`;
+  t.lastElementChild.textContent = text;
   $("toasts").appendChild(t);
-  setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity .3s"; }, 3200);
-  setTimeout(() => t.remove(), 3600);
+  setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity .35s"; }, 3200);
+  setTimeout(() => t.remove(), 3650);
 }
 
 async function api(action, body = {}) {
@@ -254,73 +360,101 @@ const initials = (nameOrEmail) => {
   const parts = src.split(/[\s._-]+/).filter(Boolean);
   return ((parts[0]?.[0] ?? "?") + (parts[1]?.[0] ?? "")).toUpperCase();
 };
+const relTime = (iso) => {
+  if (!iso) return "never signed in";
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 3600)   return `active ${Math.max(1, Math.round(s / 60))}m ago`;
+  if (s < 86400)  return `active ${Math.round(s / 3600)}h ago`;
+  if (s < 2592000) return `active ${Math.round(s / 86400)}d ago`;
+  return `active ${Math.round(s / 2592000)}mo ago`;
+};
+
+// Animated count-up for the stat cards
+function countUp(el, target) {
+  const start = performance.now(), from = 0, dur = 650;
+  const step = (t) => {
+    const p = Math.min(1, (t - start) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(from + (target - from) * e);
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 
 function applySearch() {
   const q = $("search").value.trim().toLowerCase();
-  document.querySelectorAll("#users tr[data-search]").forEach((tr) => {
-    tr.style.display = !q || tr.dataset.search.includes(q) ? "" : "none";
+  let any = false;
+  document.querySelectorAll("#users .urow[data-search]").forEach((r) => {
+    const hit = !q || r.dataset.search.includes(q);
+    r.style.display = hit ? "" : "none";
+    if (hit) any = true;
   });
+  const empty = document.querySelector("#users .empty");
+  if (empty) empty.style.display = any ? "none" : "";
 }
+
+const SAMPLE = [
+  { id: "e3e7a31b-7d14-43c8-a97d-fcd48a7037e6", email: "astrix4545@gmail.com", name: "Yinon Revivo", last_sign_in_at: new Date(Date.now()-3600e3).toISOString(), grant: { tier: "full", active: true, expires_at: null }, credits: 2 },
+  { id: "2d05541b-588a-4ab7-ba9b-99f40ab12ae1", email: "liorgediting@gmail.com", name: null, last_sign_in_at: new Date(Date.now()-86400e3*3).toISOString(), grant: null, credits: 1 },
+  { id: "7f5fdd2e-918d-4ae8-95ad-f8fafb0ffef7", email: "collector@example.com", name: "Dan Cohen", last_sign_in_at: null, grant: { tier: "enthusiast", active: true, expires_at: new Date(Date.now()+86400e3*20).toISOString() }, credits: 0 },
+];
 
 async function refresh() {
   try {
-    const { users } = await api("list_users");
+    const users = PREVIEW ? SAMPLE : (await api("list_users")).users;
 
-    // Stats
     const activeGrant = (u) => u.grant && u.grant.active &&
       (!u.grant.expires_at || new Date(u.grant.expires_at) > new Date());
-    $("statUsers").textContent   = users.length;
-    $("statGrants").textContent  = users.filter(activeGrant).length;
-    $("statCredits").textContent = users.reduce((s, u) => s + Math.max(0, u.credits ?? 0), 0);
+    countUp($("statUsers"),   users.length);
+    countUp($("statGrants"),  users.filter(activeGrant).length);
+    countUp($("statCredits"), users.reduce((s, u) => s + Math.max(0, u.credits ?? 0), 0));
 
-    $("users").innerHTML = users.map((u) => {
+    $("users").innerHTML = users.map((u, i) => {
       const active = activeGrant(u);
       const code = supportCode(u.id);
       const credits = u.credits ?? 0;
       const search = `${code} ${u.name ?? ""} ${u.email ?? ""} ${u.id}`.toLowerCase().replaceAll('"', "");
-      return `<tr data-search="${search}">
-        <td>
-          <div class="user-cell">
-            <div class="avatar">${initials(u.name ?? u.email)}</div>
-            <div>
-              <div class="name">${u.name ?? u.email ?? "—"}</div>
-              ${u.name ? `<div class="email">${u.email ?? ""}</div>` : ""}
-              <span class="code" data-copy="${code}" title="Copy support code">${code}</span>
+      const expiry = active && u.grant.expires_at
+        ? ` · until ${new Date(u.grant.expires_at).toLocaleDateString()}` : "";
+      return `<div class="urow" data-search="${search}" style="animation-delay:${Math.min(i * 45, 400)}ms">
+        <div class="user-cell">
+          <div class="avatar">${initials(u.name ?? u.email)}</div>
+          <div style="min-width:0;">
+            <div class="name">${u.name ?? u.email ?? "—"}</div>
+            ${u.name ? `<div class="email">${u.email ?? ""}</div>` : ""}
+            <div class="meta">
+              <span class="code" data-copy="${code}" title="Copy support code">${code} ⧉</span>
+              <span class="lastseen">${relTime(u.last_sign_in_at)}</span>
             </div>
           </div>
-        </td>
-        <td>
-          <span class="pill ${active ? "on" : ""}">${active ? u.grant.tier : "no grant"}</span>
-          ${credits > 0 ? `<div class="credits-chip">🎟 ${credits} check${credits === 1 ? "" : "s"} left</div>` : ""}
-        </td>
-        <td>
-          <div class="controls">
-            <div class="line">
-              <select data-user="${u.id}" class="tier" title="Access tier">
-                <option value="full">full — unlimited</option>
-                <option value="enthusiast">enthusiast — 20/mo</option>
-                <option value="commercial">commercial</option>
-              </select>
-              <select data-user="${u.id}" class="expiry" title="Grant duration">
-                <option value="">forever</option>
-                <option value="7">7 days</option>
-                <option value="30">30 days</option>
-              </select>
-            </div>
-            <div class="line">
-              <input type="number" min="1" max="100" value="1" data-user="${u.id}" class="amount" title="Checks to add" />
-              <button class="ghost sm" data-credits="${u.id}">Add checks</button>
-            </div>
+        </div>
+        <div>
+          <span class="pill ${active ? "on" : ""}">${active ? u.grant.tier + expiry : "no grant"}</span>
+          ${credits > 0 ? `<span class="credits-chip">🎟 ${credits} check${credits === 1 ? "" : "s"} left</span>` : ""}
+        </div>
+        <div class="controls">
+          <div class="line">
+            <select data-user="${u.id}" class="tier" title="Access tier">
+              <option value="full">full — unlimited</option>
+              <option value="enthusiast">enthusiast — 20/mo</option>
+              <option value="commercial">commercial</option>
+            </select>
+            <select data-user="${u.id}" class="expiry" title="Grant duration">
+              <option value="">forever</option>
+              <option value="7">7 days</option>
+              <option value="30">30 days</option>
+            </select>
           </div>
-        </td>
-        <td>
-          <div class="controls" style="min-width:110px;">
-            <button class="sm" data-grant="${u.id}">Grant</button>
-            <button class="danger sm" data-revoke="${u.id}">Revoke</button>
+          <div class="line">
+            <input type="number" min="1" max="100" value="1" data-user="${u.id}" class="amount" title="Checks to add" />
+            <button class="ghost sm" data-credits="${u.id}" style="flex:1;">🎟 Add checks</button>
           </div>
-        </td>
-      </tr>`;
-    }).join("");
+        </div>
+        <div class="actions">
+          <button class="sm" data-grant="${u.id}">Grant</button>
+          <button class="danger sm" data-revoke="${u.id}">Revoke</button>
+        </div>
+      </div>`;
+    }).join("") + `<div class="empty" style="display:none;">No users match this search</div>`;
     applySearch();
 
     document.querySelectorAll("[data-copy]").forEach((el) => el.onclick = async () => {
@@ -351,10 +485,15 @@ async function refresh() {
 
 async function renderAuth() {
   const { data: { session } } = await sb.auth.getSession();
-  show($("login"), !session);
-  show($("console"), !!session);
-  show($("whoWrap"), !!session);
-  if (session) { $("whoami").textContent = session.user.email; refresh(); }
+  const authed = PREVIEW || !!session;
+  show($("login"), !authed);
+  show($("console"), authed);
+  if (authed) {
+    const email = PREVIEW ? "preview@veri.app" : session.user.email;
+    $("whoami").textContent = email;
+    $("meAvatar").textContent = initials(email);
+    refresh();
+  }
 }
 
 $("loginBtn").onclick = async () => {
@@ -365,6 +504,9 @@ $("loginBtn").onclick = async () => {
   } catch (e) { toast(e.message, "err"); }
 };
 $("password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("loginBtn").click(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement?.tagName !== "INPUT") { e.preventDefault(); $("search")?.focus(); }
+});
 $("logoutBtn").onclick = async () => { await sb.auth.signOut(); renderAuth(); };
 $("refreshBtn").onclick = refresh;
 $("search").oninput = applySearch;
